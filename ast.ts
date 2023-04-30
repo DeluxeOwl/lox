@@ -36,6 +36,39 @@ export class UnaryExpr {
   }
 }
 
+export class AstPrinter implements ExprVisitor<string> {
+  visitBinaryExpr(expr: BinaryExpr): string {
+    return this.paranthethize(expr.operator.lexeme, expr.left, expr.right);
+  }
+  visitGroupingExpr(expr: GroupingExpr): string {
+    return this.paranthethize("group", expr.expression);
+  }
+  visitLiteralExpr(expr: LiteralExpr): string {
+    if (expr.value === null) {
+      return "nil";
+    }
+    return expr.value.toString();
+  }
+  visitUnaryExpr(expr: UnaryExpr): string {
+    return this.paranthethize(expr.operator.lexeme, expr.right);
+  }
+
+  private paranthethize(name: string, ...expr: Expr[]): string {
+    let builder = "(" + name;
+    for (const e of expr) {
+      builder += " ";
+      builder += e.accept(this);
+    }
+    builder += ")";
+
+    return builder;
+  }
+
+  print(expr: Expr): string {
+    return expr.accept(this);
+  }
+}
+
 export interface ExprVisitor<T> {
   visitBinaryExpr(expr: BinaryExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
