@@ -71,7 +71,7 @@ type TokenType =
 type Token = {
   type: TokenType;
   lexeme: string;
-  literal: any;
+  literal: string | number | null;
   line: number;
 };
 
