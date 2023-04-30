@@ -1,4 +1,4 @@
-import { KeywordToken, Token, TokenType, keywordTokenMap } from "./tokens";
+import { Token, TokenType, keywordTokenMap } from "./tokens";
 import { Lox } from "./lox";
 
 class Scanner {
@@ -31,7 +31,7 @@ class Scanner {
   }
 
   isAtEnd(): boolean {
-    return this.current > this.source.length;
+    return this.current >= this.source.length;
   }
 
   scanToken(): void {
