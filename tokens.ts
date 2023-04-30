@@ -68,15 +68,18 @@ type TokenType =
   | KeywordToken
   | LiteralToken;
 
+type LiteralValue = string | number | null;
+
 type Token = {
   type: TokenType;
   lexeme: string;
-  literal: string | number | null;
+  literal: LiteralValue;
   line: number;
 };
 
 export {
   keywordTokenMap,
+  LiteralValue,
   Token,
   TokenType,
   SingleCharacterToken,

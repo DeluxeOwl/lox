@@ -1,4 +1,4 @@
-import { Token, TokenType, keywordTokenMap } from "./tokens";
+import { LiteralValue, Token, TokenType, keywordTokenMap } from "./tokens";
 import { Lox } from "./lox";
 
 class Scanner {
@@ -118,7 +118,7 @@ class Scanner {
     return this.source[this.current++];
   }
 
-  addToken(type: TokenType, literal?: any) {
+  addToken(type: TokenType, literal?: LiteralValue) {
     const literalToAdd = typeof literal !== "undefined" ? literal : null;
 
     const text: string = this.source.substring(this.start, this.current);
