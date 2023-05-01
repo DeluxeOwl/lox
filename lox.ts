@@ -1,10 +1,9 @@
 import * as fs from "fs";
 import * as readline from "readline";
+import { AstPrinter } from "./ast";
+import { Parser } from "./parser";
 import { Scanner } from "./scanner";
 import { Token } from "./tokens";
-import { Parser } from "./parser";
-import { AstPrinter, Expr } from "./ast";
-import exp from "constants";
 
 class Lox {
   static hadError: boolean = false;
@@ -45,6 +44,8 @@ class Lox {
     const parser: Parser = new Parser(tokens);
 
     const expr = parser.parse();
+
+    console.log(expr);
 
     if (this.hadError || expr === null) return;
 
