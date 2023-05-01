@@ -1,5 +1,1 @@
-fun sum(a, b) {
-    var a = "testing";
-    var b = 65.121;
-    return a+b;
-}
+(5 > 2) > 5

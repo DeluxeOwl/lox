@@ -68,7 +68,7 @@ type TokenType =
   | KeywordToken
   | LiteralToken;
 
-type LiteralValue = string | number | null;
+type LiteralValue = string | number | boolean | null;
 
 type Token = {
   type: TokenType;
