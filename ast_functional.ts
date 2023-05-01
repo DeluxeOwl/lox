@@ -1,5 +1,8 @@
 import { LiteralValue, Token } from "./tokens";
 
+// this was from chapter 2, an alternative
+// to the visitor pattern
+
 type Expr = BinaryExpr | GroupingExpr | LiteralExpr | UnaryExpr;
 
 type BinaryExpr = {
