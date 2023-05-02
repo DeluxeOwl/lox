@@ -2,8 +2,12 @@ import {
   BinaryExpr,
   Expr,
   ExprVisitor,
+  ExpressionStmt,
   GroupingExpr,
   LiteralExpr,
+  PrintStmt,
+  Stmt,
+  StmtVisitor,
   UnaryExpr,
 } from "./ast";
 import { Token } from "./tokens";
@@ -15,7 +19,16 @@ class RuntimeError extends Error {
   }
 }
 
-class Interpreter implements ExprVisitor<any> {
+class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
+  visitExpressionStmt(stmt: ExpressionStmt): void {
+    this.evalute(stmt.expr);
+  }
+
+  visitPrintStmt(stmt: PrintStmt): void {
+    const value = this.evalute(stmt.expr);
+    console.log(this.stringify(value));
+  }
+
   visitBinaryExpr(expr: BinaryExpr) {
     const left: any = this.evalute(expr.left);
     const right: any = this.evalute(expr.right);
@@ -130,10 +143,11 @@ class Interpreter implements ExprVisitor<any> {
     return object.toString();
   }
 
-  interpret(expr: Expr) {
+  interpret(statements: Stmt[]) {
     try {
-      const value: any = this.evalute(expr);
-      console.log("result:", value);
+      for (const statement of statements) {
+        this.execute(statement);
+      }
     } catch (e) {
       if (e instanceof RuntimeError) {
         Lox.runtimeError(e);
@@ -141,6 +155,10 @@ class Interpreter implements ExprVisitor<any> {
         console.error("Unkown error", e);
       }
     }
+  }
+
+  execute(statement: Stmt) {
+    statement.accept(this);
   }
 }
 

@@ -76,4 +76,26 @@ export interface ExprVisitor<T> {
   visitUnaryExpr(expr: UnaryExpr): T;
 }
 
+export class ExpressionStmt {
+  constructor(readonly expr: Expr) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitExpressionStmt(this);
+  }
+}
+
+export class PrintStmt {
+  constructor(readonly expr: Expr) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitPrintStmt(this);
+  }
+}
+
+export interface StmtVisitor<T> {
+  visitExpressionStmt(stmt: ExpressionStmt): T;
+  visitPrintStmt(stmt: PrintStmt): T;
+}
+
 export type Expr = BinaryExpr | GroupingExpr | LiteralExpr | UnaryExpr;
+export type Stmt = ExpressionStmt | PrintStmt;

@@ -46,15 +46,15 @@ class Lox {
     console.log(tokens);
     const parser: Parser = new Parser(tokens);
 
-    const expr = parser.parse();
+    const statements = parser.parse();
 
-    console.log(expr);
+    console.log(statements);
 
-    if (this.hadError || expr === null) return;
+    if (this.hadError || statements === null) return;
 
-    console.log(new AstPrinter().print(expr));
+    // console.log(new AstPrinter().print(expr));
 
-    new Interpreter().interpret(expr);
+    new Interpreter().interpret(statements);
   }
 
   static scanError(line: number, message: string) {
