@@ -13,7 +13,7 @@ class Interpreter implements ExprVisitor<any> {
     const right: any = this.evalute(expr.right);
 
     switch (expr.operator.type) {
-      case GREATER:
+      case "GREATER":
         return Number(left) > Number(right);
       case "GREATER_EQUAL":
         return Number(left) >= Number(right);
