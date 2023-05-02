@@ -1,4 +1,6 @@
+import exp from "constants";
 import {
+  AssignExpr,
   BinaryExpr,
   Expr,
   ExpressionStmt,
@@ -63,7 +65,28 @@ class Parser {
   }
 
   private expression(): Expr {
-    return this.equality();
+    return this.assignment();
+  }
+
+  assignment(): Expr {
+    // can be any expression of higher precedence
+    const expr: Expr = this.equality();
+
+    if (this.match("EQUAL")) {
+      // check the assignment target
+      // to fail on things like a + b = c;
+      let equals: Token = this.previous();
+      let value: Expr = this.assignment();
+
+      if (expr instanceof VariableExpr) {
+        let name: Token = expr.name;
+        return new AssignExpr(name, value);
+      }
+
+      this.error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
   }
 
   private statement(): Stmt {

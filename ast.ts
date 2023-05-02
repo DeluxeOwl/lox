@@ -1,5 +1,13 @@
 import { LiteralValue, Token } from "./tokens";
 
+export class AssignExpr {
+  constructor(readonly name: Token, readonly value: Expr) {}
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitAssignExpr(this);
+  }
+}
+
 export class BinaryExpr {
   constructor(
     readonly left: Expr,
@@ -81,6 +89,7 @@ export class VariableExpr {
 // }
 
 export interface ExprVisitor<T> {
+  visitAssignExpr(expr: AssignExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
@@ -119,6 +128,7 @@ export interface StmtVisitor<T> {
 }
 
 export type Expr =
+  | AssignExpr
   | BinaryExpr
   | GroupingExpr
   | LiteralExpr

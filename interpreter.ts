@@ -1,4 +1,5 @@
 import {
+  AssignExpr,
   BinaryExpr,
   Expr,
   ExprVisitor,
@@ -24,6 +25,12 @@ class RuntimeError extends Error {
 
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   private environment = new Environment();
+
+  visitAssignExpr(expr: AssignExpr): any {
+    const value: any = this.evalute(expr.value);
+    this.environment.assign(expr.name, value);
+    return value;
+  }
 
   visitVariableExpr(expr: VariableExpr) {
     return this.environment.get(expr.name);
