@@ -20,6 +20,7 @@ class Lox {
     });
   }
 
+  // repl no longer works
   static runPrompt() {
     const rl = readline.createInterface({
       input: process.stdin,

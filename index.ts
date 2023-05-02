@@ -1,13 +1,5 @@
 #!/usr/bin/env tsx
 
-import {
-  AstPrinter,
-  BinaryExpr,
-  Expr,
-  GroupingExpr,
-  LiteralExpr,
-  UnaryExpr,
-} from "./ast";
 import { Lox } from "./lox";
 
 const args: string[] = process.argv.splice(2);
