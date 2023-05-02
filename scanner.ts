@@ -108,7 +108,7 @@ class Scanner {
           // we keep scanning to catch more errors
           // coalescing a run of invalid characters into a single error would
           // give a nicer user experience
-          Lox.error(this.line, `Unexpected character: ${c}`);
+          Lox.scanError(this.line, `Unexpected character: ${c}`);
         }
         break;
     }
@@ -165,7 +165,8 @@ class Scanner {
     }
 
     if (this.isAtEnd()) {
-      Lox.error(this.line, "Unterminated string.");
+      console.log(this);
+      Lox.scanError(this.line, "Unterminated string.");
       return;
     }
 

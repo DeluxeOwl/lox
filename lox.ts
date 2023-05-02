@@ -57,6 +57,10 @@ class Lox {
     new Interpreter().interpret(expr);
   }
 
+  static scanError(line: number, message: string) {
+    Lox.report(line, "", message);
+  }
+
   static error(token: Token, message: string) {
     if (token.type === "EOF") {
       Lox.report(token.line, " at end", message);
