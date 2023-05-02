@@ -4,9 +4,11 @@ import { AstPrinter } from "./ast";
 import { Parser } from "./parser";
 import { Scanner } from "./scanner";
 import { Token } from "./tokens";
+import { Interpreter, RuntimeError } from "./interpreter";
 
 class Lox {
   static hadError: boolean = false;
+  static hadRuntimeError: boolean = false;
 
   static runFile(path: string) {
     fs.readFile(path, (err, data) => {
@@ -14,6 +16,7 @@ class Lox {
       const code: string = data.toString();
       Lox.run(code);
       if (Lox.hadError) process.exit(65);
+      if (Lox.hadRuntimeError) process.exit(70);
     });
   }
 
@@ -50,6 +53,8 @@ class Lox {
     if (this.hadError || expr === null) return;
 
     console.log(new AstPrinter().print(expr));
+
+    new Interpreter().interpret(expr);
   }
 
   static error(token: Token, message: string) {
@@ -63,6 +68,11 @@ class Lox {
   static report(line: number, where: string, message: string) {
     console.log(`[line ${line}] Error ${where}: ${message}`);
     Lox.hadError = true;
+  }
+
+  static runtimeError(error: RuntimeError) {
+    console.error(error.message + "\n[line " + error.token.line + "]");
+    Lox.hadRuntimeError = true;
   }
 }
 
