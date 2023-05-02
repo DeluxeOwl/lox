@@ -40,4 +40,4 @@ primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")" ;
 ```
 
-https://craftinginterpreters.com/evaluating-expressions.html#detecting-runtime-errors
+https://craftinginterpreters.com/control-flow.html
