@@ -49,6 +49,9 @@ class Interpreter implements ExprVisitor<any> {
         );
       case "SLASH":
         this.checkNumberOperands(expr.operator, left, right);
+        if (Number(right) === 0) {
+          throw new RuntimeError(expr.operator, "Division by zero.");
+        }
         return Number(left) / Number(right);
       case "STAR":
         this.checkNumberOperands(expr.operator, left, right);
