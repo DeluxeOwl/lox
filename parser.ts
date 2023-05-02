@@ -1,7 +1,7 @@
-import exp from "constants";
 import {
   AssignExpr,
   BinaryExpr,
+  BlockStmt,
   Expr,
   ExpressionStmt,
   GroupingExpr,
@@ -93,7 +93,22 @@ class Parser {
     if (this.match("PRINT")) {
       return this.printStatement();
     }
+    if (this.match("LEFT_BRACE")) {
+      return new BlockStmt(this.block());
+    }
     return this.expressionStatement();
+  }
+
+  block(): Stmt[] {
+    let statements: Stmt[] = [];
+
+    while (!this.check("RIGHT_BRACE") && !this.isAtEnd()) {
+      statements.push(this.declaration() as Stmt);
+    }
+
+    this.consume("RIGHT_BRACE", "Expect '}' after block.");
+
+    return statements;
   }
 
   expressionStatement(): Stmt {

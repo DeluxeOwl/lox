@@ -1,6 +1,7 @@
 import {
   AssignExpr,
   BinaryExpr,
+  BlockStmt,
   Expr,
   ExprVisitor,
   ExpressionStmt,
@@ -13,9 +14,9 @@ import {
   VarStmt,
   VariableExpr,
 } from "./ast";
-import { Token } from "./tokens";
-import { Lox } from "./lox";
 import { Environment } from "./environment";
+import { Lox } from "./lox";
+import { Token } from "./tokens";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -25,6 +26,10 @@ class RuntimeError extends Error {
 
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   private environment = new Environment();
+
+  visitBlockStmt(stmt: BlockStmt): void {
+    this.executeBlock(stmt.statements, new Environment(this.environment));
+  }
 
   visitAssignExpr(expr: AssignExpr): any {
     const value: any = this.evalute(expr.value);
@@ -167,6 +172,19 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     }
 
     return object.toString();
+  }
+
+  executeBlock(statements: Stmt[], environment: Environment) {
+    // save the old environment and restore it
+    const previous = this.environment;
+    try {
+      this.environment = environment;
+      for (const statement of statements) {
+        this.execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
 
   interpret(statements: Stmt[]) {
