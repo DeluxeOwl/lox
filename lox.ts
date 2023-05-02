@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as readline from "readline";
-import { AstPrinter } from "./ast";
+// import { AstPrinter } from "./ast";
 import { Parser } from "./parser";
 import { Scanner } from "./scanner";
 import { Token } from "./tokens";
@@ -43,12 +43,9 @@ class Lox {
   static run(source: string) {
     const scanner: Scanner = new Scanner(source);
     const tokens: Token[] = scanner.scanTokens();
-    console.log(tokens);
     const parser: Parser = new Parser(tokens);
 
     const statements = parser.parse();
-
-    console.log(statements);
 
     if (this.hadError || statements === null) return;
 

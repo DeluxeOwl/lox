@@ -9,9 +9,12 @@ import {
   Stmt,
   StmtVisitor,
   UnaryExpr,
+  VarStmt,
+  VariableExpr,
 } from "./ast";
 import { Token } from "./tokens";
 import { Lox } from "./lox";
+import { Environment } from "./environment";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -20,6 +23,22 @@ class RuntimeError extends Error {
 }
 
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
+  private environment = new Environment();
+
+  visitVariableExpr(expr: VariableExpr) {
+    return this.environment.get(expr.name);
+  }
+
+  visitVarStmt(stmt: VarStmt): void {
+    let value = null;
+
+    if (stmt.initializer !== null) {
+      value = this.evalute(stmt.initializer);
+    }
+
+    this.environment.define(stmt.name.lexeme, value);
+  }
+
   visitExpressionStmt(stmt: ExpressionStmt): void {
     this.evalute(stmt.expr);
   }

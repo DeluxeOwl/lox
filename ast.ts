@@ -36,40 +36,52 @@ export class UnaryExpr {
   }
 }
 
-export class AstPrinter implements ExprVisitor<string> {
-  visitBinaryExpr(expr: BinaryExpr): string {
-    return this.paranthethize(expr.operator.lexeme, expr.left, expr.right);
-  }
-  visitGroupingExpr(expr: GroupingExpr): string {
-    return this.paranthethize("group", expr.expression);
-  }
-  visitLiteralExpr(expr: LiteralExpr): string {
-    if (expr.value === null) {
-      return "nil";
-    }
-    return expr.value.toString();
-  }
-  visitUnaryExpr(expr: UnaryExpr): string {
-    return this.paranthethize(expr.operator.lexeme, expr.right);
-  }
+export class VariableExpr {
+  constructor(readonly name: Token) {}
 
-  private paranthethize(name: string, ...expr: Expr[]): string {
-    let builder = "(" + name;
-    for (const e of expr) {
-      builder += " ";
-      builder += e.accept(this);
-    }
-    builder += ")";
-
-    return builder;
-  }
-
-  print(expr: Expr): string {
-    return expr.accept(this);
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitVariableExpr(this);
   }
 }
 
+// export class AstPrinter implements ExprVisitor<string> {
+//   visitVariableExpr(expr: VariableExpr): string {
+//     throw new Error("Method not implemented.");
+//   }
+//   visitBinaryExpr(expr: BinaryExpr): string {
+//     return this.paranthethize(expr.operator.lexeme, expr.left, expr.right);
+//   }
+//   visitGroupingExpr(expr: GroupingExpr): string {
+//     return this.paranthethize("group", expr.expression);
+//   }
+//   visitLiteralExpr(expr: LiteralExpr): string {
+//     if (expr.value === null) {
+//       return "nil";
+//     }
+//     return expr.value.toString();
+//   }
+//   visitUnaryExpr(expr: UnaryExpr): string {
+//     return this.paranthethize(expr.operator.lexeme, expr.right);
+//   }
+
+//   private paranthethize(name: string, ...expr: Expr[]): string {
+//     let builder = "(" + name;
+//     for (const e of expr) {
+//       builder += " ";
+//       builder += e.accept(this);
+//     }
+//     builder += ")";
+
+//     return builder;
+//   }
+
+//   print(expr: Expr): string {
+//     return expr.accept(this);
+//   }
+// }
+
 export interface ExprVisitor<T> {
+  visitVariableExpr(expr: VariableExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
   visitLiteralExpr(expr: LiteralExpr): T;
@@ -92,10 +104,24 @@ export class PrintStmt {
   }
 }
 
+export class VarStmt {
+  constructor(readonly name: Token, readonly initializer: Expr | null) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitVarStmt(this);
+  }
+}
+
 export interface StmtVisitor<T> {
   visitExpressionStmt(stmt: ExpressionStmt): T;
   visitPrintStmt(stmt: PrintStmt): T;
+  visitVarStmt(stmt: VarStmt): T;
 }
 
-export type Expr = BinaryExpr | GroupingExpr | LiteralExpr | UnaryExpr;
-export type Stmt = ExpressionStmt | PrintStmt;
+export type Expr =
+  | BinaryExpr
+  | GroupingExpr
+  | LiteralExpr
+  | UnaryExpr
+  | VariableExpr;
+export type Stmt = ExpressionStmt | PrintStmt | VarStmt;

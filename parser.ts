@@ -7,6 +7,8 @@ import {
   PrintStmt,
   Stmt,
   UnaryExpr,
+  VarStmt,
+  VariableExpr,
 } from "./ast";
 import { Lox } from "./lox";
 import { Token, TokenType } from "./tokens";
@@ -25,17 +27,39 @@ class Parser {
   constructor(readonly tokens: Token[]) {}
 
   parse(): Stmt[] {
-    let statements: Stmt[] = [];
+    let statements: Array<Stmt | null> = [];
     while (!this.isAtEnd()) {
-      statements.push(this.statement());
+      statements.push(this.declaration());
     }
 
-    return statements;
-    // try {
-    //   return this.expression();
-    // } catch (e) {
-    //   return null;
-    // }
+    statements = statements.filter((s) => s !== null) as Stmt[];
+
+    return statements as Stmt[];
+  }
+
+  declaration(): Stmt | null {
+    try {
+      if (this.match("VAR")) return this.varDeclaration();
+      return this.statement();
+    } catch (error) {
+      if (error instanceof ParseError) {
+        this.synchronize();
+        return null;
+      }
+    }
+    return null;
+  }
+  varDeclaration(): Stmt {
+    const name: Token = this.consume("IDENTIFIER", "Expect variable name.");
+
+    let initializer: Expr | null = null;
+
+    if (this.match("EQUAL")) {
+      initializer = this.expression();
+    }
+    this.consume("SEMICOLON", "Expect ';' after variable declaration.");
+
+    return new VarStmt(name, initializer);
   }
 
   private expression(): Expr {
@@ -54,6 +78,7 @@ class Parser {
     this.consume("SEMICOLON", "Expect ';' after expression.");
     return new ExpressionStmt(expr);
   }
+
   printStatement(): Stmt {
     const value = this.expression();
     this.consume("SEMICOLON", "Expect ';' after value.");
@@ -124,6 +149,10 @@ class Parser {
 
     if (this.match("NUMBER", "STRING")) {
       return new LiteralExpr(this.previous().literal);
+    }
+
+    if (this.match("IDENTIFIER")) {
+      return new VariableExpr(this.previous());
     }
 
     if (this.match("LEFT_PAREN")) {
