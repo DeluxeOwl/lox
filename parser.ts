@@ -5,6 +5,7 @@ import {
   Expr,
   ExpressionStmt,
   GroupingExpr,
+  IfStmt,
   LiteralExpr,
   PrintStmt,
   Stmt,
@@ -90,6 +91,9 @@ class Parser {
   }
 
   private statement(): Stmt {
+    if (this.match("IF")) {
+      return this.ifStatement();
+    }
     if (this.match("PRINT")) {
       return this.printStatement();
     }
@@ -97,6 +101,22 @@ class Parser {
       return new BlockStmt(this.block());
     }
     return this.expressionStatement();
+  }
+
+  ifStatement(): Stmt {
+    this.consume("LEFT_PAREN", "Expected '(' after 'if'.");
+    const condition: Expr = this.expression();
+    this.consume("RIGHT_BRACE", "Expected ')' after if condition.");
+
+    const thenBranch: Stmt = this.statement();
+    // optional else branch
+    let elseBranch: Stmt | undefined = undefined;
+
+    if (this.match("ELSE")) {
+      elseBranch = this.statement();
+    }
+
+    return new IfStmt(condition, thenBranch, elseBranch);
   }
 
   block(): Stmt[] {
@@ -227,6 +247,8 @@ class Parser {
     }
   }
 
+  // checks if current token matches type and advances
+  // returns an error with the token being considered and message
   private consume(type: TokenType, message: string) {
     if (this.check(type)) {
       return this.advance();
@@ -240,6 +262,7 @@ class Parser {
     return new ParseError();
   }
 
+  // matches a series of types
   private match(...types: TokenType[]): boolean {
     for (const type of types) {
       if (this.check(type)) {
@@ -250,12 +273,15 @@ class Parser {
     return false;
   }
 
+  // peeoks at the current type
   private check(type: TokenType): boolean {
     if (this.isAtEnd()) return false;
 
     return this.peek().type === type;
   }
 
+  // increments current
+  // returns the current token (previous actually after increment)
   private advance(): Token {
     if (!this.isAtEnd()) {
       this.current++;
@@ -267,10 +293,12 @@ class Parser {
     return this.peek().type === "EOF";
   }
 
+  // peeks at the current token being considered
   private peek(): Token {
     return this.tokens[this.current];
   }
 
+  // gets the previous token
   private previous(): Token {
     return this.tokens[this.current - 1];
   }

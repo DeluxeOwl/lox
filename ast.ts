@@ -129,11 +129,24 @@ export class BlockStmt {
   }
 }
 
+export class IfStmt {
+  constructor(
+    readonly expr: Expr,
+    readonly thenBranch: Stmt,
+    readonly elseBranch?: Stmt
+  ) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitIfStmt(this);
+  }
+}
+
 export interface StmtVisitor<T> {
   visitExpressionStmt(stmt: ExpressionStmt): T;
   visitPrintStmt(stmt: PrintStmt): T;
   visitVarStmt(stmt: VarStmt): T;
   visitBlockStmt(stmt: BlockStmt): T;
+  visitIfStmt(stmt: IfStmt): T;
 }
 
 export type Expr =
@@ -144,4 +157,4 @@ export type Expr =
   | UnaryExpr
   | VariableExpr;
 
-export type Stmt = ExpressionStmt | PrintStmt | VarStmt | BlockStmt;
+export type Stmt = ExpressionStmt | PrintStmt | VarStmt | BlockStmt | IfStmt;

@@ -6,6 +6,7 @@ import {
   ExprVisitor,
   ExpressionStmt,
   GroupingExpr,
+  IfStmt,
   LiteralExpr,
   PrintStmt,
   Stmt,
@@ -28,6 +29,13 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   private environment = new Environment();
 
   // STATEMENTS
+  visitIfStmt(stmt: IfStmt): void {
+    if (this.isTruthy(stmt.expr)) {
+      this.execute(stmt.thenBranch);
+    } else if (stmt.elseBranch) {
+      this.execute(stmt.elseBranch);
+    }
+  }
 
   visitBlockStmt(stmt: BlockStmt): void {
     this.executeBlock(stmt.statements, new Environment(this.environment));
@@ -114,9 +122,11 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   visitGroupingExpr(expr: GroupingExpr) {
     return this.evalute(expr.expression);
   }
+
   visitLiteralExpr(expr: LiteralExpr) {
     return expr.value;
   }
+
   visitUnaryExpr(expr: UnaryExpr) {
     const right: any = this.evalute(expr.right);
 
@@ -136,12 +146,14 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     }
     throw new RuntimeError(operator, "Operand must be a number.");
   }
+
   checkNumberOperands(operator: Token, left: any, right: any) {
     if (typeof left === "number" && typeof right === "number") {
       return;
     }
     throw new RuntimeError(operator, "Operands must be numbers.");
   }
+
   isEqual(a: any, b: any): boolean {
     // language specific
 

@@ -4,7 +4,8 @@ import * as readline from "readline";
 import { Parser } from "./parser";
 import { Scanner } from "./scanner";
 import { Token } from "./tokens";
-import { Interpreter, RuntimeError } from "./interpreter";
+import { RuntimeError } from "./interpreter";
+import { Interpreter } from "./Interpreter";
 
 class Lox {
   static hadError: boolean = false;
