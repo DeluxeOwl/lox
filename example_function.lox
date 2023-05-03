@@ -5,3 +5,10 @@ if(b>2) {
 }
 
 print nil or "yes";
+
+var a = 1;
+
+while(a<5) {
+  print a;
+  a = a+1;
+}
