@@ -13,6 +13,7 @@ import {
   UnaryExpr,
   VarStmt,
   VariableExpr,
+  WhileStmt,
 } from "./ast";
 import { Lox } from "./lox";
 import { Token, TokenType } from "./tokens";
@@ -124,10 +125,23 @@ class Parser {
     if (this.match("PRINT")) {
       return this.printStatement();
     }
+
+    if (this.match("WHILE")) {
+      return this.whileStatement();
+    }
     if (this.match("LEFT_BRACE")) {
       return new BlockStmt(this.block());
     }
     return this.expressionStatement();
+  }
+
+  whileStatement(): Stmt {
+    this.consume("LEFT_PAREN", "Expected '(' after while.");
+    const condition = this.expression();
+    this.consume("RIGHT_PAREN", "Expected ')' after condition.");
+    const body = this.statement();
+
+    return new WhileStmt(condition, body);
   }
 
   ifStatement(): Stmt {

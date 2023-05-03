@@ -15,6 +15,7 @@ import {
   UnaryExpr,
   VarStmt,
   VariableExpr,
+  WhileStmt,
 } from "./ast";
 import { Environment } from "./environment";
 import { Lox } from "./lox";
@@ -30,6 +31,12 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   private environment = new Environment();
 
   // STATEMENTS
+  visitWhileStmt(stmt: WhileStmt): void {
+    while (this.isTruthy(this.evalute(stmt.condition))) {
+      this.execute(stmt.body);
+    }
+  }
+
   visitIfStmt(stmt: IfStmt): void {
     if (this.isTruthy(this.evalute(stmt.condition))) {
       this.execute(stmt.thenBranch);

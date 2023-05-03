@@ -154,12 +154,21 @@ export class IfStmt {
   }
 }
 
+export class WhileStmt {
+  constructor(readonly condition: Expr, readonly body: Stmt) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitWhileStmt(this);
+  }
+}
+
 export interface StmtVisitor<T> {
   visitExpressionStmt(stmt: ExpressionStmt): T;
   visitPrintStmt(stmt: PrintStmt): T;
   visitVarStmt(stmt: VarStmt): T;
   visitBlockStmt(stmt: BlockStmt): T;
   visitIfStmt(stmt: IfStmt): T;
+  visitWhileStmt(stmt: WhileStmt): T;
 }
 
 export type Expr =
@@ -171,4 +180,10 @@ export type Expr =
   | LogicalExpr
   | VariableExpr;
 
-export type Stmt = ExpressionStmt | PrintStmt | VarStmt | BlockStmt | IfStmt;
+export type Stmt =
+  | ExpressionStmt
+  | PrintStmt
+  | VarStmt
+  | BlockStmt
+  | IfStmt
+  | WhileStmt;
