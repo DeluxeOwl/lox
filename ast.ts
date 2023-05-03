@@ -20,6 +20,20 @@ export class BinaryExpr {
   }
 }
 
+export class CallExpr {
+  constructor(
+    readonly callee: Expr,
+    // we use this token's location to report runtime errors
+    // caused by a function call
+    readonly paren: Token,
+    readonly args?: Expr[]
+  ) {}
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitCallExpr(this);
+  }
+}
+
 export class GroupingExpr {
   constructor(readonly expression: Expr) {}
 
@@ -64,47 +78,12 @@ export class LogicalExpr {
   }
 }
 
-// export class AstPrinter implements ExprVisitor<string> {
-//   visitVariableExpr(expr: VariableExpr): string {
-//     throw new Error("Method not implemented.");
-//   }
-//   visitBinaryExpr(expr: BinaryExpr): string {
-//     return this.paranthethize(expr.operator.lexeme, expr.left, expr.right);
-//   }
-//   visitGroupingExpr(expr: GroupingExpr): string {
-//     return this.paranthethize("group", expr.expression);
-//   }
-//   visitLiteralExpr(expr: LiteralExpr): string {
-//     if (expr.value === null) {
-//       return "nil";
-//     }
-//     return expr.value.toString();
-//   }
-//   visitUnaryExpr(expr: UnaryExpr): string {
-//     return this.paranthethize(expr.operator.lexeme, expr.right);
-//   }
-
-//   private paranthethize(name: string, ...expr: Expr[]): string {
-//     let builder = "(" + name;
-//     for (const e of expr) {
-//       builder += " ";
-//       builder += e.accept(this);
-//     }
-//     builder += ")";
-
-//     return builder;
-//   }
-
-//   print(expr: Expr): string {
-//     return expr.accept(this);
-//   }
-// }
-
 export interface ExprVisitor<T> {
   visitLogicalExpr(expr: LogicalExpr): T;
   visitAssignExpr(expr: AssignExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
+  visitCallExpr(expr: CallExpr): T;
   visitGroupingExpr(expr: GroupingExpr): T;
   visitLiteralExpr(expr: LiteralExpr): T;
   visitUnaryExpr(expr: UnaryExpr): T;
@@ -184,6 +163,7 @@ export interface StmtVisitor<T> {
 export type Expr =
   | AssignExpr
   | BinaryExpr
+  | CallExpr
   | GroupingExpr
   | LiteralExpr
   | UnaryExpr

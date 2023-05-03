@@ -8,6 +8,8 @@ I'm using `tsx`:
 pnpm install --global tsx
 ```
 
+https://craftinginterpreters.com/functions.html#function-declarations
+
 ## Complete Grammar
 
 ```py

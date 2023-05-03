@@ -2,10 +2,10 @@ import {
   AssignExpr,
   BinaryExpr,
   BlockStmt,
+  CallExpr,
   Expr,
   ExprVisitor,
   ExpressionStmt,
-  ForStmt,
   GroupingExpr,
   IfStmt,
   LiteralExpr,
@@ -21,6 +21,7 @@ import {
 import { Environment } from "./environment";
 import { Lox } from "./lox";
 import { Token } from "./tokens";
+import { LoxCallable, isLoxCallable } from "./LoxCallable";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -29,7 +30,29 @@ class RuntimeError extends Error {
 }
 
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
-  private environment = new Environment();
+  // clock native function in js: https://craftinginterpreters.com/functions.html#native-functions
+  // compared to "foreign functions", depends on the perspective
+
+  // fixed reference to outmost global environment
+  readonly globals = new Environment();
+
+  // tracks the current environment
+  private environment = this.globals;
+
+  // we stuff the native function in that global scope
+  Interpreter() {
+    this.globals.define("clock", {
+      arity(): number {
+        return 0;
+      },
+      call(interpreter: Interpreter, args: Expr[] | undefined): number {
+        return new Date().getTime() / 1000;
+      },
+      toString() {
+        return "<native fn>";
+      },
+    } as LoxCallable);
+  }
 
   // STATEMENTS
   visitWhileStmt(stmt: WhileStmt): void {
@@ -80,6 +103,35 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   // EXPRESSIONS
+
+  visitCallExpr(expr: CallExpr) {
+    const callee = this.evalute(expr.callee);
+
+    let args: Expr[] | undefined;
+    if (expr.args) {
+      args = [];
+      for (const arg of expr.args) {
+        args.push(this.evalute(arg));
+      }
+    }
+
+    // if it doesn't implement the interface
+    if (isLoxCallable(callee)) {
+      throw new RuntimeError(
+        expr.paren,
+        "Can only call functions and classes."
+      );
+    }
+
+    const func: LoxCallable = callee as LoxCallable;
+    if (args && isLoxCallable(func)) {
+      throw new RuntimeError(
+        expr.paren,
+        `Expected ${func.arity()} arguments but got ${args.length}.`
+      );
+    }
+    return func.call(this, args);
+  }
 
   visitBinaryExpr(expr: BinaryExpr) {
     const left: any = this.evalute(expr.left);

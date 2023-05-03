@@ -1,7 +1,9 @@
+import exp from "constants";
 import {
   AssignExpr,
   BinaryExpr,
   BlockStmt,
+  CallExpr,
   Expr,
   ExpressionStmt,
   GroupingExpr,
@@ -283,7 +285,44 @@ class Parser {
       return new UnaryExpr(operator, right);
     }
 
-    return this.primary();
+    return this.call();
+  }
+
+  private call(): Expr {
+    let expr: Expr = this.primary();
+
+    // will expand later to match properties on objects
+    while (true) {
+      // we parse a primary expression
+      if (this.match("LEFT_PAREN")) {
+        // we use finishCall to finish parsing the expression and return it
+        expr = this.finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  finishCall(callee: Expr): Expr {
+    let args: Expr[] | undefined;
+
+    if (!this.check("RIGHT_PAREN")) {
+      args = [];
+      do {
+        // simplify bytecode later, limit nr of arguments
+        // parser keeps going after this
+        if (args.length >= 255) {
+          this.error(this.peek(), "Can't have more than 255 arguments.");
+        }
+        args.push(this.expression());
+      } while (this.match("COMMA"));
+    }
+
+    const paren = this.consume("RIGHT_PAREN", "Expect ')' after arguments.");
+
+    return new CallExpr(callee, paren, args);
   }
 
   private primary(): Expr {
