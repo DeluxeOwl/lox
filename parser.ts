@@ -119,9 +119,14 @@ class Parser {
   }
 
   private statement(): Stmt {
+    if (this.match("FOR")) {
+      return this.forStatement();
+    }
+
     if (this.match("IF")) {
       return this.ifStatement();
     }
+
     if (this.match("PRINT")) {
       return this.printStatement();
     }
@@ -133,6 +138,51 @@ class Parser {
       return new BlockStmt(this.block());
     }
     return this.expressionStatement();
+  }
+
+  forStatement(): Stmt {
+    this.consume("LEFT_PAREN", "Expect '(' after 'for'.");
+
+    let initializer: Stmt | undefined;
+    // check for different cases
+    if (this.match("SEMICOLON")) {
+      initializer = undefined;
+    } else if (this.match("VAR")) {
+      initializer = this.varDeclaration();
+    } else {
+      initializer = this.expressionStatement();
+    }
+
+    let condition: Expr | undefined;
+    if (!this.check("SEMICOLON")) {
+      condition = this.expression();
+    }
+    this.consume("SEMICOLON", "Expect ';' after loop condition.");
+
+    let increment: Expr | undefined;
+    if (!this.check("RIGHT_PAREN")) {
+      increment = this.expression();
+    }
+    this.consume("RIGHT_PAREN", "Expect ')' after for clauses.");
+
+    let body: Stmt = this.statement();
+
+    // desugaring into a while loop
+    if (increment) {
+      body = new BlockStmt([body, new ExpressionStmt(increment)]);
+    }
+
+    if (!condition) {
+      condition = new LiteralExpr(true);
+    }
+    body = new WhileStmt(condition, body);
+
+    // runs once before the entire loop
+    if (initializer) {
+      body = new BlockStmt([initializer, body]);
+    }
+
+    return body;
   }
 
   whileStatement(): Stmt {
@@ -315,7 +365,7 @@ class Parser {
     return false;
   }
 
-  // peeoks at the current type
+  // peeks at the current type
   private check(type: TokenType): boolean {
     if (this.isAtEnd()) return false;
 

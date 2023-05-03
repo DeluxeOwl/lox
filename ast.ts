@@ -162,6 +162,16 @@ export class WhileStmt {
   }
 }
 
+// syntactic sugar for while
+// we'll desugar in the interpreter
+export class ForStmt {
+  constructor(
+    readonly initializer?: Expr,
+    readonly condition?: Expr,
+    readonly increment?: Expr
+  ) {}
+}
+
 export interface StmtVisitor<T> {
   visitExpressionStmt(stmt: ExpressionStmt): T;
   visitPrintStmt(stmt: PrintStmt): T;
@@ -180,6 +190,7 @@ export type Expr =
   | LogicalExpr
   | VariableExpr;
 
+// no for statement, only syntactic sugar for while
 export type Stmt =
   | ExpressionStmt
   | PrintStmt

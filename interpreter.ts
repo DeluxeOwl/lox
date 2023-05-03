@@ -5,6 +5,7 @@ import {
   Expr,
   ExprVisitor,
   ExpressionStmt,
+  ForStmt,
   GroupingExpr,
   IfStmt,
   LiteralExpr,
