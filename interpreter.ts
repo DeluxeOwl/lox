@@ -27,6 +27,8 @@ class RuntimeError extends Error {
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   private environment = new Environment();
 
+  // STATEMENTS
+
   visitBlockStmt(stmt: BlockStmt): void {
     this.executeBlock(stmt.statements, new Environment(this.environment));
   }
@@ -59,6 +61,8 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     const value = this.evalute(stmt.expr);
     console.log(this.stringify(value));
   }
+
+  // EXPRESSIONS
 
   visitBinaryExpr(expr: BinaryExpr) {
     const left: any = this.evalute(expr.left);
@@ -124,6 +128,8 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
         return !this.isTruthy(right);
     }
   }
+
+  // IMPLEMENTATION FUNCTIONS
   checkNumberOperand(operator: Token, operand: any) {
     if (typeof operand === "number") {
       return;
