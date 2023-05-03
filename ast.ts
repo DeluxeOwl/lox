@@ -52,6 +52,18 @@ export class VariableExpr {
   }
 }
 
+export class LogicalExpr {
+  constructor(
+    readonly left: Expr,
+    readonly operator: Token,
+    readonly right: Expr
+  ) {}
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitLogicalExpr(this);
+  }
+}
+
 // export class AstPrinter implements ExprVisitor<string> {
 //   visitVariableExpr(expr: VariableExpr): string {
 //     throw new Error("Method not implemented.");
@@ -89,6 +101,7 @@ export class VariableExpr {
 // }
 
 export interface ExprVisitor<T> {
+  visitLogicalExpr(expr: LogicalExpr): T;
   visitAssignExpr(expr: AssignExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
   visitBinaryExpr(expr: BinaryExpr): T;
@@ -131,7 +144,7 @@ export class BlockStmt {
 
 export class IfStmt {
   constructor(
-    readonly expr: Expr,
+    readonly condition: Expr,
     readonly thenBranch: Stmt,
     readonly elseBranch?: Stmt
   ) {}
@@ -155,6 +168,7 @@ export type Expr =
   | GroupingExpr
   | LiteralExpr
   | UnaryExpr
+  | LogicalExpr
   | VariableExpr;
 
 export type Stmt = ExpressionStmt | PrintStmt | VarStmt | BlockStmt | IfStmt;

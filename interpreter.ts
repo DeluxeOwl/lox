@@ -8,6 +8,7 @@ import {
   GroupingExpr,
   IfStmt,
   LiteralExpr,
+  LogicalExpr,
   PrintStmt,
   Stmt,
   StmtVisitor,
@@ -30,7 +31,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
 
   // STATEMENTS
   visitIfStmt(stmt: IfStmt): void {
-    if (this.isTruthy(stmt.expr)) {
+    if (this.isTruthy(this.evalute(stmt.condition))) {
       this.execute(stmt.thenBranch);
     } else if (stmt.elseBranch) {
       this.execute(stmt.elseBranch);
@@ -137,6 +138,23 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
       case "BANG":
         return !this.isTruthy(right);
     }
+  }
+
+  visitLogicalExpr(expr: LogicalExpr) {
+    const left = this.evalute(expr.left);
+
+    // short circuit
+    if (expr.operator.type === "OR") {
+      if (this.isTruthy(left)) {
+        return left;
+      }
+    } else {
+      if (!this.isTruthy(left)) {
+        return left;
+      }
+    }
+
+    return this.evalute(expr.right);
   }
 
   // IMPLEMENTATION FUNCTIONS

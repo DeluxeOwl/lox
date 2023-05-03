@@ -7,6 +7,7 @@ import {
   GroupingExpr,
   IfStmt,
   LiteralExpr,
+  LogicalExpr,
   PrintStmt,
   Stmt,
   UnaryExpr,
@@ -52,6 +53,7 @@ class Parser {
     }
     return null;
   }
+
   varDeclaration(): Stmt {
     const name: Token = this.consume("IDENTIFIER", "Expect variable name.");
 
@@ -71,7 +73,7 @@ class Parser {
 
   assignment(): Expr {
     // can be any expression of higher precedence
-    const expr: Expr = this.equality();
+    const expr: Expr = this.or();
 
     if (this.match("EQUAL")) {
       // check the assignment target
@@ -85,6 +87,31 @@ class Parser {
       }
 
       this.error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+
+  or(): Expr {
+    let expr = this.and();
+
+    while (this.match("OR")) {
+      const operator: Token = this.previous();
+      const right: Expr = this.and();
+
+      expr = new LogicalExpr(expr, operator, right);
+    }
+
+    return expr;
+  }
+
+  and(): Expr {
+    let expr = this.equality();
+    while (this.match("AND")) {
+      const operator: Token = this.previous();
+      const right: Expr = this.and();
+
+      expr = new LogicalExpr(expr, operator, right);
     }
 
     return expr;
@@ -106,7 +133,8 @@ class Parser {
   ifStatement(): Stmt {
     this.consume("LEFT_PAREN", "Expected '(' after 'if'.");
     const condition: Expr = this.expression();
-    this.consume("RIGHT_BRACE", "Expected ')' after if condition.");
+
+    this.consume("RIGHT_PAREN", "Expected ')' after if condition.");
 
     const thenBranch: Stmt = this.statement();
     // optional else branch
