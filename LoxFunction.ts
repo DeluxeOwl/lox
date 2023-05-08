@@ -5,12 +5,12 @@ import { Environment } from "./environment";
 import { Interpreter } from "./interpreter";
 
 export class LoxFunction implements LoxCallable {
-  constructor(readonly declaration: FunStmt) {}
+  constructor(readonly declaration: FunStmt, readonly closure: Environment) {}
 
   call(interpreter: Interpreter, args: Expr[]) {
     // each function gets its own environment
     // with its parameters
-    const env = new Environment(interpreter.globals);
+    const env = new Environment(this.closure);
     for (let i = 0; i < this.declaration.params.length; i++) {
       env.define(this.declaration.params[i].lexeme, args[i]);
     }
