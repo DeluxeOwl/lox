@@ -2,7 +2,7 @@ import { Expr } from "./ast";
 import { Interpreter } from "./interpreter";
 
 export interface LoxCallable {
-  call(interpreter: Interpreter, args: Expr[] | undefined): any;
+  call(interpreter: Interpreter, args: Expr[]): any;
   // the number of arguments something expects
   arity(): number;
 }

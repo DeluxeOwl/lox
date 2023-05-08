@@ -26,7 +26,7 @@ export class CallExpr {
     // we use this token's location to report runtime errors
     // caused by a function call
     readonly paren: Token,
-    readonly args?: Expr[]
+    readonly args: Expr[]
   ) {}
 
   accept<T>(visitor: ExprVisitor<T>): T {
@@ -141,15 +141,27 @@ export class WhileStmt {
   }
 }
 
+export class FunStmt {
+  constructor(
+    readonly name: Token,
+    readonly params: Token[],
+    readonly body: Stmt[]
+  ) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitFunStmt(this);
+  }
+}
+
 // syntactic sugar for while
 // we'll desugar in the interpreter
-export class ForStmt {
-  constructor(
-    readonly initializer?: Expr,
-    readonly condition?: Expr,
-    readonly increment?: Expr
-  ) {}
-}
+// export class ForStmt {
+//   constructor(
+//     readonly initializer?: Expr,
+//     readonly condition?: Expr,
+//     readonly increment?: Expr
+//   ) {}
+// }
 
 export interface StmtVisitor<T> {
   visitExpressionStmt(stmt: ExpressionStmt): T;
@@ -158,6 +170,7 @@ export interface StmtVisitor<T> {
   visitBlockStmt(stmt: BlockStmt): T;
   visitIfStmt(stmt: IfStmt): T;
   visitWhileStmt(stmt: WhileStmt): T;
+  visitFunStmt(stmt: FunStmt): T;
 }
 
 export type Expr =
@@ -175,6 +188,7 @@ export type Stmt =
   | ExpressionStmt
   | PrintStmt
   | VarStmt
+  | FunStmt
   | BlockStmt
   | IfStmt
   | WhileStmt;

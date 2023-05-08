@@ -6,6 +6,7 @@ import {
   CallExpr,
   Expr,
   ExpressionStmt,
+  FunStmt,
   GroupingExpr,
   IfStmt,
   LiteralExpr,
@@ -46,6 +47,7 @@ class Parser {
 
   declaration(): Stmt | null {
     try {
+      if (this.match("FUN")) return this.function("function");
       if (this.match("VAR")) return this.varDeclaration();
       return this.statement();
     } catch (error) {
@@ -55,6 +57,31 @@ class Parser {
       }
     }
     return null;
+  }
+
+  // kind, method or function
+  function(kind: string): Stmt {
+    const name: Token = this.consume("IDENTIFIER", `Expect ${kind} name.`);
+    this.consume("LEFT_PAREN", `Expect '(' after ${kind} name.`);
+
+    let parameters: Token[] = [];
+
+    if (!this.check("RIGHT_PAREN")) {
+      do {
+        if (parameters.length >= 255) {
+          this.error(this.peek(), "Can't have more than 255 parameters.");
+        }
+        parameters.push(this.consume("IDENTIFIER", "Expect parameter name."));
+      } while (this.match("COMMA"));
+    }
+    this.consume("RIGHT_PAREN", "Expect ')' after parameters.");
+
+    // block assumes '{' has been matched
+    // this gives us more context => hey, we're in a function
+    this.consume("LEFT_BRACE", `Expect '{' before ${kind} body.`);
+    const body: Stmt[] = this.block();
+
+    return new FunStmt(name, parameters, body);
   }
 
   varDeclaration(): Stmt {
@@ -306,10 +333,9 @@ class Parser {
   }
 
   finishCall(callee: Expr): Expr {
-    let args: Expr[] | undefined;
+    let args: Expr[] = [];
 
     if (!this.check("RIGHT_PAREN")) {
-      args = [];
       do {
         // simplify bytecode later, limit nr of arguments
         // parser keeps going after this

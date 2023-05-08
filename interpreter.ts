@@ -6,6 +6,7 @@ import {
   Expr,
   ExprVisitor,
   ExpressionStmt,
+  FunStmt,
   GroupingExpr,
   IfStmt,
   LiteralExpr,
@@ -45,7 +46,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
       arity(): number {
         return 0;
       },
-      call(interpreter: Interpreter, args: Expr[] | undefined): number {
+      call(interpreter: Interpreter, args: Expr[]): number {
         return new Date().getTime() / 1000;
       },
       toString() {
@@ -55,6 +56,10 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   // STATEMENTS
+  visitFunStmt(stmt: FunStmt): void {
+    throw new Error("Method not implemented.");
+  }
+
   visitWhileStmt(stmt: WhileStmt): void {
     while (this.isTruthy(this.evalute(stmt.condition))) {
       this.execute(stmt.body);
@@ -107,7 +112,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   visitCallExpr(expr: CallExpr) {
     const callee = this.evalute(expr.callee);
 
-    let args: Expr[] | undefined;
+    let args: Expr[] = [];
     if (expr.args) {
       args = [];
       for (const arg of expr.args) {
