@@ -3,3 +3,7 @@ fun sayHi(first, last) {
 }
 
 sayHi("Dear", "Reader");
+
+var a = 2;
+
+a(5);
