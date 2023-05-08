@@ -23,6 +23,7 @@ import { Environment } from "./environment";
 import { Lox } from "./lox";
 import { Token } from "./tokens";
 import { LoxCallable, isLoxCallable } from "./LoxCallable";
+import { LoxFunction } from "./LoxFunction";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -57,7 +58,8 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
 
   // STATEMENTS
   visitFunStmt(stmt: FunStmt): void {
-    throw new Error("Method not implemented.");
+    const func = new LoxFunction(stmt);
+    this.environment.define(stmt.name.lexeme, func);
   }
 
   visitWhileStmt(stmt: WhileStmt): void {
@@ -121,7 +123,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     }
 
     // if it doesn't implement the interface
-    if (isLoxCallable(callee)) {
+    if (!isLoxCallable(callee)) {
       throw new RuntimeError(
         expr.paren,
         "Can only call functions and classes."
@@ -129,7 +131,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     }
 
     const func: LoxCallable = callee as LoxCallable;
-    if (args && isLoxCallable(func)) {
+    if (args.length !== func.arity()) {
       throw new RuntimeError(
         expr.paren,
         `Expected ${func.arity()} arguments but got ${args.length}.`
