@@ -61,6 +61,8 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   // STATEMENTS
 
   // https://craftinginterpreters.com/functions.html#returning-from-calls
+  // alternative - contrinuation-passing style (pass a continuation function)
+  // trampolines, tail call optimization
   visitReturnStmt(stmt: ReturnStmt): void {
     let value: any = null;
     if (stmt.value !== null) {
