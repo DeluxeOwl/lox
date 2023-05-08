@@ -37,6 +37,6 @@ export class Environment {
       return this.enclosing.get(name);
     }
 
-    throw new RuntimeError(name, `Undefined variabled ${name.lexeme}.`);
+    throw new RuntimeError(name, `Undefined variable ${name.lexeme}.`);
   }
 }

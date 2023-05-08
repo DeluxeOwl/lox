@@ -12,6 +12,7 @@ import {
   LiteralExpr,
   LogicalExpr,
   PrintStmt,
+  ReturnStmt,
   Stmt,
   StmtVisitor,
   UnaryExpr,
@@ -42,7 +43,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   private environment = this.globals;
 
   // we stuff the native function in that global scope
-  Interpreter() {
+  constructor() {
     this.globals.define("clock", {
       arity(): number {
         return 0;
@@ -57,6 +58,10 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   // STATEMENTS
+  visitReturnStmt(stmt: ReturnStmt): void {
+    throw new Error("Method not implemented.");
+  }
+
   visitFunStmt(stmt: FunStmt): void {
     const func = new LoxFunction(stmt);
     this.environment.define(stmt.name.lexeme, func);

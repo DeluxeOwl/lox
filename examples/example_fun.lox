@@ -4,6 +4,9 @@ fun sayHi(first, last) {
 
 sayHi("Dear", "Reader");
 
+var time = clock();
+print time;
+
 var a = 2;
 
 a(5);

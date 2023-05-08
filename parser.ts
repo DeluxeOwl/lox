@@ -11,6 +11,7 @@ import {
   LiteralExpr,
   LogicalExpr,
   PrintStmt,
+  ReturnStmt,
   Stmt,
   UnaryExpr,
   VarStmt,
@@ -159,6 +160,10 @@ class Parser {
       return this.printStatement();
     }
 
+    if (this.match("RETURN")) {
+      return this.returnStatement();
+    }
+
     if (this.match("WHILE")) {
       return this.whileStatement();
     }
@@ -166,6 +171,18 @@ class Parser {
       return new BlockStmt(this.block());
     }
     return this.expressionStatement();
+  }
+
+  returnStatement(): Stmt {
+    const keyword: Token = this.previous();
+    let value: Expr | null = null;
+
+    if (!this.check("SEMICOLON")) {
+      value = this.expression();
+    }
+
+    this.consume("SEMICOLON", "Expect ';' after return value.");
+    return new ReturnStmt(keyword, value);
   }
 
   forStatement(): Stmt {
