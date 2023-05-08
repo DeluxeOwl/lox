@@ -25,6 +25,7 @@ import { Lox } from "./lox";
 import { Token } from "./tokens";
 import { LoxCallable, isLoxCallable } from "./LoxCallable";
 import { LoxFunction } from "./LoxFunction";
+import { Return } from "./Return";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -58,8 +59,14 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   // STATEMENTS
+
+  // https://craftinginterpreters.com/functions.html#returning-from-calls
   visitReturnStmt(stmt: ReturnStmt): void {
-    throw new Error("Method not implemented.");
+    let value: any = null;
+    if (stmt.value !== null) {
+      value = this.evalute(stmt.value);
+    }
+    throw new Return(value);
   }
 
   visitFunStmt(stmt: FunStmt): void {

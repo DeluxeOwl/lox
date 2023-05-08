@@ -1,4 +1,5 @@
 import { LoxCallable } from "./LoxCallable";
+import { Return } from "./Return";
 import { Expr, FunStmt } from "./ast";
 import { Environment } from "./environment";
 import { Interpreter } from "./interpreter";
@@ -14,7 +15,13 @@ export class LoxFunction implements LoxCallable {
       env.define(this.declaration.params[i].lexeme, args[i]);
     }
 
-    interpreter.executeBlock(this.declaration.body, env);
+    try {
+      interpreter.executeBlock(this.declaration.body, env);
+    } catch (returnValue: unknown) {
+      if (returnValue instanceof Return) {
+        return returnValue.value;
+      }
+    }
   }
 
   arity(): number {
