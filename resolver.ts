@@ -57,14 +57,14 @@ function createStack<T>() {
   return { push, pop, peek, isEmpty, size, get };
 }
 
-export type FunctionType = "NONE" | "FUNCTION";
+export type FunType = "NONE" | "FUNCTION" | "METHOD";
 
 // resolve = determine its value or replace it with a corresponding value
 
 // only e few kinds of nodes are interesting when it comes to resolving variables
 // block statements, function declaration, variable decl, variable and assign expr
 export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
-  private currentFunction: FunctionType = "NONE";
+  private currentFunction: FunType = "NONE";
 
   // This field keeps track of the stack of scopes currently, uh, in scope. Each element in the stack is a Map representing a single block scope. Keys, as in Environment, are variable names.
   constructor(
@@ -83,6 +83,12 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
 
   visitClassStmt(stmt: ClassStmt): void {
     this.declare(stmt.name);
+
+    for (const method of stmt.methods) {
+      const declaration: FunType = "METHOD";
+      this.resolveFunction(method as FunStmt, declaration);
+    }
+
     this.define(stmt.name);
   }
 
@@ -184,7 +190,7 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     this.resolveFunction(stmt, "FUNCTION");
   }
 
-  resolveFunction(fun: FunStmt, type: FunctionType) {
+  resolveFunction(fun: FunStmt, type: FunType) {
     let enclosingFunction = this.currentFunction;
     this.currentFunction = type;
 

@@ -7,5 +7,24 @@ class DevonshireCream {
 print DevonshireCream;
 
 var cream = DevonshireCream();
-
 print cream;
+
+cream.test = 5;
+print cream.test;
+
+class Bagle {
+
+}
+
+cream.side = Bagle();
+
+cream.side.topping = "chocolate";
+print cream.side.topping;
+
+class Bacon {
+  eat() {
+    print "Crunch crunch";
+  }
+}
+
+Bacon().eat();
