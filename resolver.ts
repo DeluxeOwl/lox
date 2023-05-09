@@ -66,11 +66,11 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   ) {}
 
   visitExpressionStmt(stmt: ExpressionStmt): void {
-    throw new Error("Method not implemented.");
+    this.resolveStatement(stmt);
   }
 
   visitPrintStmt(stmt: PrintStmt): void {
-    throw new Error("Method not implemented.");
+    this.resolveStatement(stmt);
   }
 
   // resolving variable declarations
@@ -80,15 +80,6 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
       this.resolveExpr(stmt.initializer);
     }
     this.define(stmt.name);
-  }
-
-  define(name: Token) {
-    if (this.scopes.isEmpty()) {
-      return;
-    }
-
-    // mark it as fully initialized and available to use
-    this.scopes.peek()!.set(name.lexeme, true);
   }
 
   declare(name: Token) {
@@ -105,6 +96,15 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     // we mark it as "not ready yet" by binding its name to false
     // it checks whether or not we have finished resolving that variable's initializer
     scope.set(name.lexeme, false);
+  }
+
+  define(name: Token) {
+    if (this.scopes.isEmpty()) {
+      return;
+    }
+
+    // mark it as fully initialized and available to use
+    this.scopes.peek()!.set(name.lexeme, true);
   }
 
   // begins a new scope, traverses into the statements and discards the socpe
@@ -136,12 +136,18 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     this.scopes.pop();
   }
 
+  // no control flow
   visitIfStmt(stmt: IfStmt): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(stmt.condition);
+    this.resolveStatement(stmt.thenBranch);
+    if (stmt.elseBranch) {
+      this.resolveStatement(stmt.elseBranch);
+    }
   }
 
   visitWhileStmt(stmt: WhileStmt): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(stmt.condition);
+    this.resolveStatement(stmt.body);
   }
 
   visitFunStmt(stmt: FunStmt): void {
@@ -164,15 +170,21 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   visitReturnStmt(stmt: ReturnStmt): void {
-    throw new Error("Method not implemented.");
+    if (stmt.value) {
+      this.resolveExpr(stmt.value);
+    }
   }
+
   visitLogicalExpr(expr: LogicalExpr): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(expr.right);
+    this.resolveExpr(expr.left);
   }
+
   visitAssignExpr(expr: AssignExpr): void {
     this.resolveExpr(expr.value);
     this.resolveLocal(expr, expr.name);
   }
+
   visitVariableExpr(expr: VariableExpr): void {
     // if it exists in the current scope but the value is false
     // it means we declared but not initalized it
@@ -201,19 +213,26 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
       }
     }
   }
+
   visitBinaryExpr(expr: BinaryExpr): void {
     throw new Error("Method not implemented.");
   }
+
   visitCallExpr(expr: CallExpr): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(expr.callee);
+    for (const arg of expr.args) {
+      this.resolveExpr(arg);
+    }
   }
+
   visitGroupingExpr(expr: GroupingExpr): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(expr.expression);
   }
-  visitLiteralExpr(expr: LiteralExpr): void {
-    throw new Error("Method not implemented.");
-  }
+
+  // doesnt mention variables or subexpressions, no work
+  visitLiteralExpr(expr: LiteralExpr): void {}
+
   visitUnaryExpr(expr: UnaryExpr): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(expr.right);
   }
 }
