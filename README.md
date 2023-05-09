@@ -8,8 +8,6 @@ I'm using `tsx`:
 pnpm install --global tsx
 ```
 
-https://craftinginterpreters.com/functions.html#function-declarations
-
 ## Complete Grammar
 
 ```py
@@ -81,3 +79,5 @@ IDENTIFIER    => ALPHA ( ALPHA | DIGIT )* ;
 ALPHA         => "a" ... "z" | "A" ... "Z" | "_" ;
 DIGIT         => "0" ... "9" ;
 ```
+
+https://craftinginterpreters.com/resolving-and-binding.html#resolving-variable-declarations

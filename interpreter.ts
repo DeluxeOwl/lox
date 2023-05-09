@@ -34,6 +34,9 @@ class RuntimeError extends Error {
 }
 
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
+  resolve(expr: Expr, arg1: number) {
+    throw new Error("Method not implemented.");
+  }
   // clock native function in js: https://craftinginterpreters.com/functions.html#native-functions
   // compared to "foreign functions", depends on the perspective
 
