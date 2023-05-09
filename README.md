@@ -80,4 +80,4 @@ ALPHA         => "a" ... "z" | "A" ... "Z" | "_" ;
 DIGIT         => "0" ... "9" ;
 ```
 
-https://craftinginterpreters.com/resolving-and-binding.html#resolving-variable-declarations
+https://craftinginterpreters.com/classes.html#this
