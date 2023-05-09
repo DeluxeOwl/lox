@@ -1,8 +1,10 @@
+import { isatty } from "tty";
 import {
   AssignExpr,
   BinaryExpr,
   BlockStmt,
   CallExpr,
+  ClassStmt,
   Expr,
   ExpressionStmt,
   FunStmt,
@@ -47,6 +49,9 @@ class Parser {
 
   declaration(): Stmt | null {
     try {
+      if (this.match("CLASS")) {
+        return this.classDeclaration();
+      }
       if (this.match("FUN")) return this.function("function");
       if (this.match("VAR")) return this.varDeclaration();
       return this.statement();
@@ -57,6 +62,20 @@ class Parser {
       }
     }
     return null;
+  }
+
+  classDeclaration(): Stmt {
+    const name = this.consume("IDENTIFIER", "Expect class name.");
+    this.consume("LEFT_BRACE", "Expect '{' before class body");
+
+    const methods: Stmt[] = [];
+    while (!this.check("RIGHT_BRACE") && !this.isAtEnd()) {
+      methods.push(this.function("method"));
+    }
+
+    this.consume("RIGHT_BRACE", "Expect '}' after class body.");
+
+    return new ClassStmt(name, methods);
   }
 
   // kind, method or function

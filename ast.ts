@@ -160,6 +160,14 @@ export class ReturnStmt {
   }
 }
 
+export class ClassStmt {
+  constructor(readonly name: Token, readonly methods: Stmt[]) {}
+
+  accept<T>(visitor: StmtVisitor<T>): T {
+    return visitor.visitClassStmt(this);
+  }
+}
+
 // syntactic sugar for while
 // we'll desugar in the interpreter
 // export class ForStmt {
@@ -179,6 +187,7 @@ export interface StmtVisitor<T> {
   visitWhileStmt(stmt: WhileStmt): T;
   visitFunStmt(stmt: FunStmt): T;
   visitReturnStmt(stmt: ReturnStmt): T;
+  visitClassStmt(stmt: ClassStmt): T;
 }
 
 export type Expr =
@@ -197,6 +206,7 @@ export type Stmt =
   | PrintStmt
   | ReturnStmt
   | VarStmt
+  | ClassStmt
   | FunStmt
   | BlockStmt
   | IfStmt

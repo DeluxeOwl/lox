@@ -3,6 +3,7 @@ import {
   BinaryExpr,
   BlockStmt,
   CallExpr,
+  ClassStmt,
   Expr,
   ExprVisitor,
   ExpressionStmt,
@@ -26,6 +27,7 @@ import { Token } from "./tokens";
 import { LoxCallable, isLoxCallable } from "./LoxCallable";
 import { LoxFunction } from "./LoxFunction";
 import { Return } from "./Return";
+import { LoxClass } from "./LoxClass";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -59,6 +61,12 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
         return "<native fn>";
       },
     } as LoxCallable);
+  }
+
+  visitClassStmt(stmt: ClassStmt): void {
+    this.environment.define(stmt.name.lexeme, null);
+    const klass = new LoxClass(stmt.name.lexeme);
+    this.environment.assign(stmt.name, klass);
   }
 
   // Each time it visits a variable, it tells the interpreter how many scopes there are between the current scope and the scope where the variable is defined.
