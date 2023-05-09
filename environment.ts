@@ -2,10 +2,30 @@ import { RuntimeError } from "./interpreter";
 import { Token } from "./tokens";
 
 export class Environment {
-  private values: Map<string, any> = new Map<string, any>();
+  values: Map<string, any> = new Map<string, any>();
 
   // enclosing = parent environment
   constructor(readonly enclosing: Environment | null = null) {}
+
+  // the interpreter blindly trusts that the resolver found the variable
+  // deep coupling between classes
+  getAt(distance: number, name: string) {
+    return this.ancestor(distance).values.get(name);
+  }
+
+  ancestor(distance: number): Environment {
+    let env: Environment = this;
+
+    for (let i = 0; i < distance; i++) {
+      env = env.enclosing!;
+    }
+
+    return env;
+  }
+
+  assignAt(distance: number, name: Token, value: any) {
+    this.ancestor(distance).values.set(name.lexeme, value);
+  }
 
   assign(name: Token, value: any) {
     if (this.values.has(name.lexeme)) {

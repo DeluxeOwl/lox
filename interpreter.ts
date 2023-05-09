@@ -34,9 +34,6 @@ class RuntimeError extends Error {
 }
 
 class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
-  resolve(expr: Expr, arg1: number) {
-    throw new Error("Method not implemented.");
-  }
   // clock native function in js: https://craftinginterpreters.com/functions.html#native-functions
   // compared to "foreign functions", depends on the perspective
 
@@ -45,6 +42,9 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
 
   // tracks the current environment
   private environment = this.globals;
+
+  // tracks the current environment
+  private locals: Map<Expr, number> = new Map<Expr, number>();
 
   // we stuff the native function in that global scope
   constructor() {
@@ -59,6 +59,21 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
         return "<native fn>";
       },
     } as LoxCallable);
+  }
+
+  // Each time it visits a variable, it tells the interpreter how many scopes there are between the current scope and the scope where the variable is defined.
+  resolve(expr: Expr, depth: number) {
+    this.locals.set(expr, depth);
+  }
+
+  lookupVariable(name: Token, expr: Expr) {
+    const distance = this.locals.get(expr);
+
+    if (typeof distance !== "undefined") {
+      return this.environment.getAt(distance, name.lexeme);
+    } else {
+      return this.globals.get(name);
+    }
   }
 
   // STATEMENTS
@@ -99,12 +114,18 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
 
   visitAssignExpr(expr: AssignExpr): any {
     const value: any = this.evalute(expr.value);
-    this.environment.assign(expr.name, value);
+
+    const distance = this.locals.get(expr);
+    if (typeof distance !== "undefined") {
+      this.environment.assignAt(distance, expr.name, value);
+    } else {
+      this.globals.assign(expr.name, value);
+    }
     return value;
   }
 
   visitVariableExpr(expr: VariableExpr) {
-    return this.environment.get(expr.name);
+    return this.lookupVariable(expr.name, expr);
   }
 
   visitVarStmt(stmt: VarStmt): void {

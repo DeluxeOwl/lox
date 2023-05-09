@@ -213,7 +213,7 @@ class Parser {
     let body: Stmt = this.statement();
 
     // desugaring into a while loop
-    if (increment) {
+    if (typeof increment !== "undefined") {
       body = new BlockStmt([body, new ExpressionStmt(increment)]);
     }
 
@@ -223,7 +223,7 @@ class Parser {
     body = new WhileStmt(condition, body);
 
     // runs once before the entire loop
-    if (initializer) {
+    if (typeof initializer !== "undefined") {
       body = new BlockStmt([initializer, body]);
     }
 

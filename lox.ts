@@ -6,6 +6,7 @@ import { Scanner } from "./scanner";
 import { Token } from "./tokens";
 import { RuntimeError, Interpreter } from "./interpreter";
 import { Stmt } from "./ast";
+import { Resolver } from "./resolver";
 
 class Lox {
   static hadError: boolean = false;
@@ -45,6 +46,7 @@ class Lox {
   static run(source: string) {
     const scanner: Scanner = new Scanner(source);
     const tokens: Token[] = scanner.scanTokens();
+
     const parser: Parser = new Parser(tokens);
 
     const statements = parser.parse();
@@ -53,7 +55,16 @@ class Lox {
 
     // console.log(new AstPrinter().print(expr));
 
-    new Interpreter().interpret(statements);
+    const interpreter = new Interpreter();
+    const resolver = new Resolver(interpreter);
+
+    resolver.resolveStatements(statements);
+
+    if (this.hadError) {
+      return;
+    }
+
+    interpreter.interpret(statements);
   }
 
   static scanError(line: number, message: string) {

@@ -54,11 +54,15 @@ function createStack<T>() {
   return { push, pop, peek, isEmpty, size, get };
 }
 
+export type FunctionType = "NONE" | "FUNCTION";
+
 // resolve = determine its value or replace it with a corresponding value
 
 // only e few kinds of nodes are interesting when it comes to resolving variables
 // block statements, function declaration, variable decl, variable and assign expr
 export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
+  private currentFunction: FunctionType = "NONE";
+
   // This field keeps track of the stack of scopes currently, uh, in scope. Each element in the stack is a Map representing a single block scope. Keys, as in Environment, are variable names.
   constructor(
     private readonly interpreter: Interpreter,
@@ -66,11 +70,11 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   ) {}
 
   visitExpressionStmt(stmt: ExpressionStmt): void {
-    this.resolveStatement(stmt);
+    this.resolveExpr(stmt.expr);
   }
 
   visitPrintStmt(stmt: PrintStmt): void {
-    this.resolveStatement(stmt);
+    this.resolveExpr(stmt.expr);
   }
 
   // resolving variable declarations
@@ -90,6 +94,10 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     // can't be undefined
     // non null assertion operator
     const scope: Map<string, boolean> = this.scopes.peek()!;
+
+    if (scope.has(name.lexeme)) {
+      Lox.error(name, "Already a variable with this name in this scope.");
+    }
 
     // declaration adds the variable to the innermost scope
     // so that it shadows any outer one
@@ -156,10 +164,13 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     this.declare(stmt.name);
     this.define(stmt.name);
 
-    this.resolveFunction(stmt);
+    this.resolveFunction(stmt, "FUNCTION");
   }
 
-  resolveFunction(fun: FunStmt) {
+  resolveFunction(fun: FunStmt, type: FunctionType) {
+    let enclosingFunction = this.currentFunction;
+    this.currentFunction = type;
+
     this.beginScope();
     for (const param of fun.params) {
       this.declare(param);
@@ -167,9 +178,15 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     }
     this.resolveStatements(fun.body);
     this.endScope();
+
+    this.currentFunction = enclosingFunction;
   }
 
   visitReturnStmt(stmt: ReturnStmt): void {
+    if (this.currentFunction === "NONE") {
+      Lox.error(stmt.keyword, "Can't return from top level code");
+    }
+
     if (stmt.value) {
       this.resolveExpr(stmt.value);
     }
@@ -215,7 +232,8 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
   }
 
   visitBinaryExpr(expr: BinaryExpr): void {
-    throw new Error("Method not implemented.");
+    this.resolveExpr(expr.left);
+    this.resolveExpr(expr.right);
   }
 
   visitCallExpr(expr: CallExpr): void {
