@@ -8,12 +8,14 @@ import {
   ExprVisitor,
   ExpressionStmt,
   FunStmt,
+  GetExpr,
   GroupingExpr,
   IfStmt,
   LiteralExpr,
   LogicalExpr,
   PrintStmt,
   ReturnStmt,
+  SetExpr,
   Stmt,
   StmtVisitor,
   UnaryExpr,
@@ -28,6 +30,7 @@ import { LoxCallable, isLoxCallable } from "./LoxCallable";
 import { LoxFunction } from "./LoxFunction";
 import { Return } from "./Return";
 import { LoxClass } from "./LoxClass";
+import { LoxInstance } from "./LoxInstance";
 
 class RuntimeError extends Error {
   constructor(readonly token: Token, readonly message: string) {
@@ -63,6 +66,26 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     } as LoxCallable);
   }
 
+  visitSetExpr(expr: SetExpr) {
+    const obj = this.evaluate(expr.obj);
+    if (!(obj instanceof LoxInstance)) {
+      throw new RuntimeError(expr.name, "Only instances have fields.");
+    }
+
+    const value = this.evaluate(expr.value);
+    obj.set(expr.name, value);
+    return value;
+  }
+
+  visitGetExpr(expr: GetExpr) {
+    const obj: any = this.evaluate(expr.obj);
+    if (obj instanceof LoxInstance) {
+      return obj.get(expr.name);
+    }
+
+    throw new RuntimeError(expr.name, "Only instances have properties.");
+  }
+
   visitClassStmt(stmt: ClassStmt): void {
     this.environment.define(stmt.name.lexeme, null);
     const klass = new LoxClass(stmt.name.lexeme);
@@ -92,7 +115,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   visitReturnStmt(stmt: ReturnStmt): void {
     let value: any = null;
     if (stmt.value !== null) {
-      value = this.evalute(stmt.value);
+      value = this.evaluate(stmt.value);
     }
     throw new Return(value);
   }
@@ -103,13 +126,13 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   visitWhileStmt(stmt: WhileStmt): void {
-    while (this.isTruthy(this.evalute(stmt.condition))) {
+    while (this.isTruthy(this.evaluate(stmt.condition))) {
       this.execute(stmt.body);
     }
   }
 
   visitIfStmt(stmt: IfStmt): void {
-    if (this.isTruthy(this.evalute(stmt.condition))) {
+    if (this.isTruthy(this.evaluate(stmt.condition))) {
       this.execute(stmt.thenBranch);
     } else if (stmt.elseBranch) {
       this.execute(stmt.elseBranch);
@@ -121,7 +144,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   visitAssignExpr(expr: AssignExpr): any {
-    const value: any = this.evalute(expr.value);
+    const value: any = this.evaluate(expr.value);
 
     const distance = this.locals.get(expr);
     if (typeof distance !== "undefined") {
@@ -140,31 +163,31 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     let value = null;
 
     if (stmt.initializer !== null) {
-      value = this.evalute(stmt.initializer);
+      value = this.evaluate(stmt.initializer);
     }
 
     this.environment.define(stmt.name.lexeme, value);
   }
 
   visitExpressionStmt(stmt: ExpressionStmt): void {
-    this.evalute(stmt.expr);
+    this.evaluate(stmt.expr);
   }
 
   visitPrintStmt(stmt: PrintStmt): void {
-    const value = this.evalute(stmt.expr);
+    const value = this.evaluate(stmt.expr);
     console.log(this.stringify(value));
   }
 
   // EXPRESSIONS
 
   visitCallExpr(expr: CallExpr) {
-    const callee = this.evalute(expr.callee);
+    const callee = this.evaluate(expr.callee);
 
     let args: Expr[] = [];
     if (expr.args) {
       args = [];
       for (const arg of expr.args) {
-        args.push(this.evalute(arg));
+        args.push(this.evaluate(arg));
       }
     }
 
@@ -187,8 +210,8 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   visitBinaryExpr(expr: BinaryExpr) {
-    const left: any = this.evalute(expr.left);
-    const right: any = this.evalute(expr.right);
+    const left: any = this.evaluate(expr.left);
+    const right: any = this.evaluate(expr.right);
 
     switch (expr.operator.type) {
       case "GREATER":
@@ -234,7 +257,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   visitGroupingExpr(expr: GroupingExpr) {
-    return this.evalute(expr.expression);
+    return this.evaluate(expr.expression);
   }
 
   visitLiteralExpr(expr: LiteralExpr) {
@@ -242,7 +265,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   visitUnaryExpr(expr: UnaryExpr) {
-    const right: any = this.evalute(expr.right);
+    const right: any = this.evaluate(expr.right);
 
     switch (expr.operator.type) {
       case "MINUS":
@@ -254,7 +277,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
   }
 
   visitLogicalExpr(expr: LogicalExpr) {
-    const left = this.evalute(expr.left);
+    const left = this.evaluate(expr.left);
 
     // short circuit
     if (expr.operator.type === "OR") {
@@ -267,7 +290,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
       }
     }
 
-    return this.evalute(expr.right);
+    return this.evaluate(expr.right);
   }
 
   // IMPLEMENTATION FUNCTIONS
@@ -303,7 +326,7 @@ class Interpreter implements ExprVisitor<any>, StmtVisitor<void> {
     return true;
   }
 
-  evalute(expr: Expr): any {
+  evaluate(expr: Expr): any {
     return expr.accept(this);
   }
 

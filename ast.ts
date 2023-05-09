@@ -34,6 +34,14 @@ export class CallExpr {
   }
 }
 
+export class GetExpr {
+  constructor(readonly obj: Expr, readonly name: Token) {}
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitGetExpr(this);
+  }
+}
+
 export class GroupingExpr {
   constructor(readonly expression: Expr) {}
 
@@ -58,6 +66,14 @@ export class UnaryExpr {
   }
 }
 
+export class SetExpr {
+  constructor(readonly obj: Expr, readonly name: Token, readonly value: Expr) {}
+
+  accept<T>(visitor: ExprVisitor<T>): T {
+    return visitor.visitSetExpr(this);
+  }
+}
+
 export class VariableExpr {
   constructor(readonly name: Token) {}
 
@@ -79,6 +95,8 @@ export class LogicalExpr {
 }
 
 export interface ExprVisitor<T> {
+  visitGetExpr(expr: GetExpr): T;
+  visitSetExpr(expr: SetExpr): T;
   visitLogicalExpr(expr: LogicalExpr): T;
   visitAssignExpr(expr: AssignExpr): T;
   visitVariableExpr(expr: VariableExpr): T;
@@ -194,8 +212,10 @@ export type Expr =
   | AssignExpr
   | BinaryExpr
   | CallExpr
+  | GetExpr
   | GroupingExpr
   | LiteralExpr
+  | SetExpr
   | UnaryExpr
   | LogicalExpr
   | VariableExpr;

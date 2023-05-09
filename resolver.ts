@@ -20,6 +20,8 @@ import {
   Stmt,
   Expr,
   ClassStmt,
+  GetExpr,
+  SetExpr,
 } from "./ast";
 import { Interpreter } from "./interpreter";
 import { Lox } from "./lox";
@@ -69,6 +71,15 @@ export class Resolver implements ExprVisitor<void>, StmtVisitor<void> {
     private readonly interpreter: Interpreter,
     private readonly scopes = createStack<Map<string, boolean>>()
   ) {}
+
+  visitSetExpr(expr: SetExpr): void {
+    this.resolveExpr(expr.value);
+    this.resolveExpr(expr.obj);
+  }
+
+  visitGetExpr(expr: GetExpr): void {
+    this.resolveExpr(expr.obj);
+  }
 
   visitClassStmt(stmt: ClassStmt): void {
     this.declare(stmt.name);

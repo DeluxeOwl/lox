@@ -8,12 +8,14 @@ import {
   Expr,
   ExpressionStmt,
   FunStmt,
+  GetExpr,
   GroupingExpr,
   IfStmt,
   LiteralExpr,
   LogicalExpr,
   PrintStmt,
   ReturnStmt,
+  SetExpr,
   Stmt,
   UnaryExpr,
   VarStmt,
@@ -133,6 +135,9 @@ class Parser {
       if (expr instanceof VariableExpr) {
         let name: Token = expr.name;
         return new AssignExpr(name, value);
+      } else if (expr instanceof GetExpr) {
+        const get = expr;
+        return new SetExpr(get.obj, get.name, value);
       }
 
       this.error(equals, "Invalid assignment target.");
@@ -359,6 +364,12 @@ class Parser {
       if (this.match("LEFT_PAREN")) {
         // we use finishCall to finish parsing the expression and return it
         expr = this.finishCall(expr);
+      } else if (this.match("DOT")) {
+        const name = this.consume(
+          "IDENTIFIER",
+          "Expect property name after '.'."
+        );
+        expr = new GetExpr(expr, name);
       } else {
         break;
       }
