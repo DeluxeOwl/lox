@@ -54,8 +54,6 @@ function createStack<T>() {
   return { push, pop, peek, isEmpty, size, get };
 }
 
-type Stack<T> = Array<T>;
-
 // resolve = determine its value or replace it with a corresponding value
 
 // only e few kinds of nodes are interesting when it comes to resolving variables
